@@ -54,11 +54,23 @@ public class RadianceClient implements ClientModInitializer {
 
             System.load(dllTargetPath.toAbsolutePath().toString());
 
+            // DLSS availability check (non-fatal)
             Path dlssTargetPath = radianceDir.resolve("nvngx_dlss.dll");
             Path dlssDTargetPath = radianceDir.resolve("nvngx_dlssd.dll");
 
             if (!Files.exists(dlssTargetPath) || !Files.exists(dlssDTargetPath)) {
-                throw new RuntimeException("DLSS runtime libraries not found!");
+                LOGGER.warn("═══════════════════════════════════════════════════════");
+                LOGGER.warn("DLSS runtime libraries not found!");
+                LOGGER.warn("DLSS features will be UNAVAILABLE.");
+                LOGGER.warn("The mod will use NRD + FSR3 fallback pipeline.");
+                LOGGER.warn("");
+                LOGGER.warn("To enable DLSS (NVIDIA RTX 20/30/40 series only):");
+                LOGGER.warn("  1. Download NVIDIA DLSS SDK from developer.nvidia.com");
+                LOGGER.warn("  2. Place nvngx_dlss.dll and nvngx_dlssd.dll in:");
+                LOGGER.warn("     {}", radianceDir.toAbsolutePath());
+                LOGGER.warn("═══════════════════════════════════════════════════════");
+            } else {
+                LOGGER.info("DLSS runtime libraries detected. DLSS features will be available.");
             }
         } else if (osName.toLowerCase().contains("linux")) {
             Path soTargetPath = radianceDir.resolve("libcore.so");
@@ -67,11 +79,23 @@ public class RadianceClient implements ClientModInitializer {
 
             System.load(soTargetPath.toAbsolutePath().toString());
 
+            // DLSS availability check (non-fatal)
             Path dlssTargetPath = radianceDir.resolve("libnvidia-ngx-dlss.so.310.5.3");
             Path dlssDTargetPath = radianceDir.resolve("libnvidia-ngx-dlssd.so.310.5.3");
 
             if (!Files.exists(dlssTargetPath) || !Files.exists(dlssDTargetPath)) {
-                throw new RuntimeException("DLSS runtime libraries not found!");
+                LOGGER.warn("═══════════════════════════════════════════════════════");
+                LOGGER.warn("DLSS runtime libraries not found!");
+                LOGGER.warn("DLSS features will be UNAVAILABLE.");
+                LOGGER.warn("The mod will use NRD + FSR3 fallback pipeline.");
+                LOGGER.warn("");
+                LOGGER.warn("To enable DLSS (NVIDIA RTX 20/30/40 series only):");
+                LOGGER.warn("  1. Download NVIDIA DLSS SDK from developer.nvidia.com");
+                LOGGER.warn("  2. Place the DLSS .so files in:");
+                LOGGER.warn("     {}", radianceDir.toAbsolutePath());
+                LOGGER.warn("═══════════════════════════════════════════════════════");
+            } else {
+                LOGGER.info("DLSS runtime libraries detected. DLSS features will be available.");
             }
         } else {
             throw new RuntimeException("The OS " + osName + " is not supported");
