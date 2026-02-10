@@ -695,203 +695,7 @@ public class EntityProxy {
         float lineWidth,
         Constants.Coordinates coordinate,
         boolean normalOffset) {
-        TextureManager
-            textureManager =
-            MinecraftClient.getInstance()
-                .getTextureManager();
-
-        int entityHashCodeSize = entityRenderDataList.getTotalEntityCount() * Integer.BYTES;
-        ByteBuffer entityHashCodeBB = MemoryUtil.memAlloc(entityHashCodeSize);
-        long entityHashCodeAddr = memAddress(entityHashCodeBB);
-        int entityHashCodeBaseAddr = 0;
-
-        int entityPosXSize = entityRenderDataList.getTotalEntityCount() * Double.BYTES;
-        ByteBuffer entityPosXBB = MemoryUtil.memAlloc(entityPosXSize);
-        long entityPosXAddr = memAddress(entityPosXBB);
-        int entityPosXBaseAddr = 0;
-
-        int entityPosYSize = entityRenderDataList.getTotalEntityCount() * Double.BYTES;
-        ByteBuffer entityPosYBB = MemoryUtil.memAlloc(entityPosYSize);
-        long entityPosYAddr = memAddress(entityPosYBB);
-        int entityPosYBaseAddr = 0;
-
-        int entityPosZSize = entityRenderDataList.getTotalEntityCount() * Double.BYTES;
-        ByteBuffer entityPosZBB = MemoryUtil.memAlloc(entityPosZSize);
-        long entityPosZAddr = memAddress(entityPosZBB);
-        int entityPosZBaseAddr = 0;
-
-        int entityRTFlagSize = entityRenderDataList.getTotalEntityCount() * Integer.BYTES;
-        ByteBuffer entityRTFlagBB = MemoryUtil.memAlloc(entityRTFlagSize);
-        long entityRTFlagAddr = memAddress(entityRTFlagBB);
-        int entityRTFlagBaseAddr = 0;
-
-        int entityPrebuiltBLASSize = entityRenderDataList.getTotalEntityCount() * Integer.BYTES;
-        ByteBuffer entityPrebuiltBLASBB = MemoryUtil.memAlloc(entityPrebuiltBLASSize);
-        long entityPrebuiltBLASAddr = memAddress(entityPrebuiltBLASBB);
-        int entityPrebuiltBLASBaseAddr = 0;
-
-        int entityPostSize = entityRenderDataList.getTotalEntityCount() * Integer.BYTES;
-        ByteBuffer entityPostBB = MemoryUtil.memAlloc(entityPostSize);
-        long entityPostAddr = memAddress(entityPostBB);
-        int entityPostBaseAddr = 0;
-
-        int entityLayerCountSize = entityRenderDataList.getTotalEntityCount() * Integer.BYTES;
-        ByteBuffer entityLayerCountBB = MemoryUtil.memAlloc(entityLayerCountSize);
-        long entityLayerCountAddr = memAddress(entityLayerCountBB);
-        int entityLayerCountBaseAddr = 0;
-
-        int geometryTypeSize = entityRenderDataList.getTotalLayersCount() * Integer.BYTES;
-        ByteBuffer geometryTypeBB = MemoryUtil.memAlloc(geometryTypeSize);
-        long geometryTypeAddr = memAddress(geometryTypeBB);
-        int geometryTypeBaseAddr = 0;
-
-        int geometryTextureSize = entityRenderDataList.getTotalLayersCount() * Integer.BYTES;
-        ByteBuffer geometryTextureBB = MemoryUtil.memAlloc(geometryTextureSize);
-        long geometryTextureAddr = memAddress(geometryTextureBB);
-        int geometryTextureBaseAddr = 0;
-
-        int vertexFormatSize = entityRenderDataList.getTotalLayersCount() * Integer.BYTES;
-        ByteBuffer vertexFormatBB = MemoryUtil.memAlloc(vertexFormatSize);
-        long vertexFormatAddr = memAddress(vertexFormatBB);
-        int vertexFormatBaseAddr = 0;
-
-        int indexFormatSize = entityRenderDataList.getTotalLayersCount() * Integer.BYTES;
-        ByteBuffer indexFormatBB = MemoryUtil.memAlloc(indexFormatSize);
-        long indexFormatAddr = memAddress(indexFormatBB);
-        int indexFormatBaseAddr = 0;
-
-        int vertexCountSize = entityRenderDataList.getTotalLayersCount() * Integer.BYTES;
-        ByteBuffer vertexCountBB = MemoryUtil.memAlloc(vertexCountSize);
-        long vertexCountAddr = memAddress(vertexCountBB);
-        int vertexCountBaseAddr = 0;
-
-        int verticesSize = entityRenderDataList.getTotalLayersCount() * Long.BYTES;
-        ByteBuffer verticesBB = MemoryUtil.memAlloc(verticesSize);
-        long verticesAddr = memAddress(verticesBB);
-        int verticesBaseAddr = 0;
-
-        for (EntityRenderData entityRenderData : entityRenderDataList) {
-            entityHashCodeBB.putInt(entityHashCodeBaseAddr, entityRenderData.hashCode);
-            entityHashCodeBaseAddr += Integer.BYTES;
-
-            entityPosXBB.putDouble(entityPosXBaseAddr, entityRenderData.x);
-            entityPosXBaseAddr += Double.BYTES;
-
-            entityPosYBB.putDouble(entityPosYBaseAddr, entityRenderData.y);
-            entityPosYBaseAddr += Double.BYTES;
-
-            entityPosZBB.putDouble(entityPosZBaseAddr, entityRenderData.z);
-            entityPosZBaseAddr += Double.BYTES;
-
-            entityRTFlagBB.putInt(entityRTFlagBaseAddr, entityRenderData.rtFlag);
-            entityRTFlagBaseAddr += Integer.BYTES;
-
-            entityPrebuiltBLASBB.putInt(entityPrebuiltBLASBaseAddr, entityRenderData.prebuiltBLAS);
-            entityPrebuiltBLASBaseAddr += Integer.BYTES;
-
-            entityPostBB.putInt(entityPostBaseAddr, entityRenderData.post ? 1 : 0);
-            entityPostBaseAddr += Integer.BYTES;
-
-            entityLayerCountBB.putInt(entityLayerCountBaseAddr, entityRenderData.size());
-            entityLayerCountBaseAddr += Integer.BYTES;
-
-            for (EntityRenderLayer entityRenderLayer : entityRenderData) {
-                RenderLayer renderLayer = entityRenderLayer.renderLayer;
-                BuiltBuffer vertexBuffer = entityRenderLayer.builtBuffer;
-
-                Identifier
-                    identifier =
-                    ((RenderLayer.MultiPhase) renderLayer).phases.texture.getId()
-                        .orElse(MissingSprite.getMissingSpriteId());
-                int
-                    geometryTypeID =
-                    Constants.GeometryTypes.getGeometryType(renderLayer, entityRenderLayer.reflect)
-                        .getValue();
-                int
-                    geometryTextureID =
-                    textureManager.getTexture(identifier)
-                        .getGlId();
-                int
-                    vertexFormatID =
-                    Constants.VertexFormats.getValue(vertexBuffer.getDrawParameters()
-                        .format());
-                int
-                    indexFormatID =
-                    Constants.DrawModes.getValue(vertexBuffer.getDrawParameters()
-                        .mode());
-
-                BufferProxy.BufferInfo vertexBufferInfo = BufferProxy.getBufferInfo(
-                    vertexBuffer.getBuffer());
-                assert vertexBuffer.getDrawParameters()
-                    .indexCount() == vertexBuffer.getDrawParameters()
-                    .vertexCount() / 4 * 6;
-
-                geometryTypeBB.putInt(geometryTypeBaseAddr, geometryTypeID);
-                geometryTypeBaseAddr += Integer.BYTES;
-
-                geometryTextureBB.putInt(geometryTextureBaseAddr, geometryTextureID);
-                geometryTextureBaseAddr += Integer.BYTES;
-
-                vertexFormatBB.putInt(vertexFormatBaseAddr, vertexFormatID);
-                vertexFormatBaseAddr += Integer.BYTES;
-
-                indexFormatBB.putInt(indexFormatBaseAddr, indexFormatID);
-                indexFormatBaseAddr += Integer.BYTES;
-
-                vertexCountBB.putInt(vertexCountBaseAddr,
-                    vertexBuffer.getDrawParameters()
-                        .vertexCount());
-                vertexCountBaseAddr += Integer.BYTES;
-
-                verticesBB.putLong(verticesBaseAddr, vertexBufferInfo.addr());
-                verticesBaseAddr += Long.BYTES;
-            }
-        }
-
-        queueBuild(lineWidth,
-            coordinate.getValue(),
-            normalOffset,
-            entityRenderDataList.getTotalEntityCount(),
-            entityHashCodeAddr,
-            entityPosXAddr,
-            entityPosYAddr,
-            entityPosZAddr,
-            entityRTFlagAddr,
-            entityPrebuiltBLASAddr,
-            entityPostAddr,
-            entityLayerCountAddr,
-            geometryTypeAddr,
-            geometryTextureAddr,
-            vertexFormatAddr,
-            indexFormatAddr,
-            vertexCountAddr,
-            verticesAddr);
-
-        // free
-        MemoryUtil.memFree(entityPosXBB);
-        MemoryUtil.memFree(entityPosYBB);
-        MemoryUtil.memFree(entityPosZBB);
-        MemoryUtil.memFree(entityRTFlagBB);
-        MemoryUtil.memFree(entityPrebuiltBLASBB);
-        MemoryUtil.memFree(entityPostBB);
-        MemoryUtil.memFree(entityLayerCountBB);
-        MemoryUtil.memFree(geometryTypeBB);
-        MemoryUtil.memFree(geometryTextureBB);
-        MemoryUtil.memFree(vertexFormatBB);
-        MemoryUtil.memFree(indexFormatBB);
-        MemoryUtil.memFree(vertexCountBB);
-        MemoryUtil.memFree(verticesBB);
-
-        for (EntityRenderData entityRenderData : entityRenderDataList) {
-            for (EntityRenderLayer entityRenderLayer : entityRenderData) {
-                BuiltBuffer vertexBuffer = entityRenderLayer.builtBuffer;
-                vertexBuffer.close();
-            }
-        }
-
-        for (StorageVertexConsumerProvider storageVertexConsumerProvider : storageVertexConsumerProviders) {
-            storageVertexConsumerProvider.close();
-        }
+        queueBuildInternal(storageVertexConsumerProviders, entityRenderDataList, lineWidth, coordinate, normalOffset, true);
     }
 
     public static void queueBuildWithoutClose(EntityRenderDataList entityRenderDataList) {
@@ -902,6 +706,16 @@ public class EntityProxy {
         float lineWidth,
         Constants.Coordinates coordinate,
         boolean normalOffset) {
+        queueBuildInternal(null, entityRenderDataList, lineWidth, coordinate, normalOffset, false);
+    }
+
+    private static void queueBuildInternal(
+        List<StorageVertexConsumerProvider> storageVertexConsumerProviders,
+        EntityRenderDataList entityRenderDataList,
+        float lineWidth,
+        Constants.Coordinates coordinate,
+        boolean normalOffset,
+        boolean shouldClose) {
         TextureManager
             textureManager =
             MinecraftClient.getInstance()
@@ -1075,6 +889,7 @@ public class EntityProxy {
             verticesAddr);
 
         // free
+        MemoryUtil.memFree(entityHashCodeBB);
         MemoryUtil.memFree(entityPosXBB);
         MemoryUtil.memFree(entityPosYBB);
         MemoryUtil.memFree(entityPosZBB);
@@ -1088,6 +903,21 @@ public class EntityProxy {
         MemoryUtil.memFree(indexFormatBB);
         MemoryUtil.memFree(vertexCountBB);
         MemoryUtil.memFree(verticesBB);
+
+        if (shouldClose) {
+            for (EntityRenderData entityRenderData : entityRenderDataList) {
+                for (EntityRenderLayer entityRenderLayer : entityRenderData) {
+                    BuiltBuffer vertexBuffer = entityRenderLayer.builtBuffer;
+                    vertexBuffer.close();
+                }
+            }
+
+            if (storageVertexConsumerProviders != null) {
+                for (StorageVertexConsumerProvider storageVertexConsumerProvider : storageVertexConsumerProviders) {
+                    storageVertexConsumerProvider.close();
+                }
+            }
+        }
     }
 
     private static native void queueBuild(float lineWidth,
