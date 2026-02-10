@@ -608,21 +608,6 @@ public class Pipeline {
             return;
         }
 
-        for (int index = 0; index < pipelineStorage.modules.size(); index++) {
-            StoredModule storedModule = pipelineStorage.modules.get(index);
-
-            if (storedModule == null || storedModule.id == null || storedModule.entryName == null) {
-                continue;
-            }
-
-            if (!isNativeModuleAvailable("render_pipeline.module.dlss.name")) {
-                assembleDefault();
-                savePipeline();
-                RadianceClient.LOGGER.error("DLSS is not available. Use NRD!");
-                return;
-            }
-        }
-
         clear();
 
         Map<String, Module> idToModule = new HashMap<>();
