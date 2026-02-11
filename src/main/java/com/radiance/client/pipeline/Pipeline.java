@@ -611,12 +611,20 @@ public class Pipeline {
         clear();
 
         Map<String, Module> idToModule = new HashMap<>();
+        boolean hasUnavailableModule = false;
 
         for (int index = 0; index < pipelineStorage.modules.size(); index++) {
             StoredModule storedModule = pipelineStorage.modules.get(index);
 
             if (storedModule == null || storedModule.id == null || storedModule.entryName == null) {
                 continue;
+            }
+
+            // 检查模块是否在 C++ 端可用
+            if (!isNativeModuleAvailable(storedModule.entryName)) {
+                RadianceClient.LOGGER.warn("Saved pipeline contains unavailable module: {}", storedModule.entryName);
+                hasUnavailableModule = true;
+                break;
             }
 
             Module module = addModule(storedModule.entryName);
@@ -651,6 +659,14 @@ public class Pipeline {
             }
 
             idToModule.put(storedModule.id, module);
+        }
+
+        // 如果发现不可用的模块，回退到默认管线
+        if (hasUnavailableModule) {
+            RadianceClient.LOGGER.error("Saved pipeline contains unavailable modules. Falling back to default pipeline.");
+            assembleDefault();
+            savePipeline();
+            return;
         }
 
         for (Module module : INSTANCE.modules) {
